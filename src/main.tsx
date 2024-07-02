@@ -20,6 +20,6 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <PokemonProvider>
-  <RouterProvider router={router} />
+    <RouterProvider router={router} />
   </PokemonProvider>
   );

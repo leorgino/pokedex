@@ -5,14 +5,14 @@ import { Pagination } from "../../components/Pagination";
 import { PokemonList } from "../../components/PokemonList";
 import { PokemonContext } from "../../context/PokemonContext";
 import { usePagination } from "../../hooks/usePagination";
-
+import { Searcher } from "../../components/Searcher";
 import styles from "./styles.module.scss";
 
 export const Home = () => {
-  const { pokemonsFiltered } = useContext(PokemonContext);
+  const { pokemonsFiltered, nameToSearch, changeNameToSearch} = useContext(PokemonContext);
   const { page, nextPage, previousPage, backToHome } = usePagination();
 
-  let perPage = 12;
+  const perPage = 12;
 
   return (
     <div className={styles.home}>
@@ -23,6 +23,10 @@ export const Home = () => {
         </div>
       </header>
       <Filters />
+      <Searcher
+        nameToSearch={nameToSearch}
+        changeNameToSearch={changeNameToSearch}
+      />
       <PokemonList
         page={page}
         perPage={perPage}

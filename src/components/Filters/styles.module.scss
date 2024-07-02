@@ -8,7 +8,7 @@
     width: 100%;
     max-width: 350px;
     margin: 0 auto;
-  
+
     .container {
       width: 100%;
       display: flex;
@@ -17,7 +17,7 @@
       position: relative;
       overflow: visible;
     }
-  
+
     .orderClose {
       width: 100%;
       margin: 0 auto;
@@ -26,28 +26,28 @@
       border-radius: 8px;
       font-size: 16px;
       height: 38px;
-  
+
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 0.6rem;
       cursor: pointer;
-  
+
       span {
         padding-top: 3px;
       }
-  
+
       svg {
         height: 14px;
         width: 14px;
-  
+
         path {
           stroke: #212121;
         }
         transition-duration: 0.3s;
       }
     }
-  
+
     .orderOpen {
       @extend .orderClose;
   

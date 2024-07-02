@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 import {
   AllPokemonsResult,
   PokemonsByTypeResult,
@@ -9,31 +9,39 @@ import {
 interface ContextProps {
   types: PokeType[];
   filterSelected: PokeType;
+  nameToSearch: string;
   pokemonsFiltered: string[] | null;
   changeTypeSelected: (type: PokeType) => void;
+  changeNameToSearch: (type: string) => void;
 }
 
 export const PokemonContext = createContext<ContextProps>({} as ContextProps);
 
 const PokemonProvider = ({ children }: any) => {
-  let allPokemonsUrl = "https://pokeapi.co/api/v2/pokemon?limit=10000&offset=0";
+  // const allPokemonsUrl = "https://pokeapi.co/api/v2/pokemon?limit=10000&offset=0";
+  const baseUrl = "https://pokeapi.co/api/v2/pokemon";
 
   const defaultState: PokeType = {
     name: "All",
-    url: allPokemonsUrl,
+    url: `${baseUrl}?limit=10000&offset=0`,
   };
 
   const [allPokemons, setAllPokemons] = useState(null);
   const [pokemonsFiltered, setPokemonsFiltered] = useState(null);
 
   const [types, setTypes] = useState([defaultState]);
+  const [nameToSearch, setNameToSearch] = useState('');
   const [filterSelected, setFilterSelected] = useState(defaultState);
+
+  const changeNameToSearch = (value: string) => {
+    setNameToSearch(value)
+  }
 
   const changeTypeSelected = async (type: PokeType) => {
     setFilterSelected(type);
 
     const { data } = await axios.get(type?.url!);
-    let pokemons = data?.pokemon?.map(
+    const pokemons = data?.pokemon?.map(
       ({ pokemon }: PokemonsByTypeResult) => pokemon?.url
     );
 
@@ -42,26 +50,34 @@ const PokemonProvider = ({ children }: any) => {
       : setPokemonsFiltered(allPokemons);
   };
 
-  const getPokemonsType = async () => {
+  const getPokemonsType = useCallback(async () => {
     const { data } = await axios.get("https://pokeapi.co/api/v2/type");
-    setTypes([...types, ...data.results]);
-  };
+    setTypes(prevTypes => [...prevTypes, ...data.results]);
+  }, []);
 
-  const getAllPokemons = async () => {
-    const { data } = await axios.get(allPokemonsUrl);
+  const getAllPokemons = useCallback(async () => {
+    const url = `${baseUrl}?limit=10000&offset=0`;
 
-    let pokemons = data?.results?.map(
-      (pokemon: AllPokemonsResult) => pokemon?.url
-    );
-
-    setAllPokemons(pokemons);
-    setPokemonsFiltered(pokemons);
-  };
+    try {
+      const { data } = await axios.get(url);
+      const pokemons = data?.results
+        ?.filter((pokemon: AllPokemonsResult) => 
+          nameToSearch ? pokemon.name.toLowerCase().includes(nameToSearch.toLowerCase()) : true
+        )
+        .map((pokemon: AllPokemonsResult) => pokemon?.url);
+      setAllPokemons(pokemons);
+      setPokemonsFiltered(pokemons);
+    } catch (error) {
+      console.error("Error fetching Pokémon:", error);
+      setAllPokemons(null);
+      setPokemonsFiltered(null);
+    }
+  }, [nameToSearch]);
 
   useEffect(() => {
     getPokemonsType();
     getAllPokemons();
-  }, []);
+  }, [nameToSearch, getAllPokemons, getPokemonsType]);
 
   return (
     <PokemonContext.Provider
@@ -69,7 +85,9 @@ const PokemonProvider = ({ children }: any) => {
         types,
         filterSelected,
         pokemonsFiltered,
+        nameToSearch,
         changeTypeSelected,
+        changeNameToSearch,
       }}
     >
       {children}
